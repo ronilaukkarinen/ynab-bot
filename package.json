@@ -1,0 +1,35 @@
+{
+  "name": "ynab-matrix-bot",
+  "version": "1.0.0",
+  "description": "A Matrix bot that monitors YNAB transactions and posts budget updates to Matrix rooms",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "setup": "node src/setup.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ynab",
+    "matrix",
+    "bot",
+    "budget",
+    "transactions",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "matrix-js-sdk": "^34.7.0",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
