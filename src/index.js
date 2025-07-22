@@ -70,7 +70,9 @@ class YnabMatrixBot {
 
     this.running = true;
 
-    console.log('🚀 Bot started! Monitoring every 10 seconds...');
+    // YNAB allows 200 requests/hour, so check every 3 minutes to be safe
+    const pollInterval = 3 * 60 * 1000; // 3 minutes
+    console.log(`🚀 Bot started! Monitoring every ${pollInterval / 60000} minutes...`);
 
     this.checkInterval = setInterval(async () => {
       try {
@@ -79,7 +81,7 @@ class YnabMatrixBot {
       } catch (error) {
         console.error('❌ Error checking transactions:', error.message);
       }
-    }, 10000); // 10 seconds
+    }, pollInterval);
 
     // Do first check immediately (with timeout protection)
     console.log('🔍 Initial check...');
@@ -156,7 +158,7 @@ async function main() {
     console.log('  npm start -- --test test connections and exit');
     console.log('  npm start -- --help show this help message');
     console.log('');
-    console.log('The bot monitors YNAB every 10 seconds for new transactions');
+    console.log('The bot monitors YNAB every 3 minutes for new transactions');
     console.log('and sends instant notifications to Matrix when found.');
   } else {
     await bot.start();

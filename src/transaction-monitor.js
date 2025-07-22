@@ -5,6 +5,11 @@ export class TransactionMonitor {
     this.messageFormatter = messageFormatter;
     this.lastTransactionCount = 0;
     this.knownTransactionIds = new Set();
+    
+    // Add simple caching for categories to reduce API calls
+    this.categoryCache = null;
+    this.categoryCacheTime = null;
+    this.cacheValidityMinutes = 30; // Cache categories for 30 minutes
   }
 
   async initialize() {
@@ -96,8 +101,20 @@ export class TransactionMonitor {
     const categoryDetails = new Map();
 
     try {
-      // Get all categories from YNAB (includes budget information)
-      const categories = await this.ynabClient.getCategories();
+      // Check if we have cached categories that are still valid
+      const now = Date.now();
+      const cacheAgeMinutes = this.categoryCacheTime ? (now - this.categoryCacheTime) / (1000 * 60) : Infinity;
+      
+      let categories;
+      if (this.categoryCache && cacheAgeMinutes < this.cacheValidityMinutes) {
+        console.log(`📋 Using cached categories (age: ${Math.round(cacheAgeMinutes)}min)`);
+        categories = this.categoryCache;
+      } else {
+        console.log('📋 Fetching fresh categories...');
+        categories = await this.ynabClient.getCategories();
+        this.categoryCache = categories;
+        this.categoryCacheTime = now;
+      }
 
       // Create a map of category_id -> category details with budget info
       categories.forEach(categoryGroup => {
