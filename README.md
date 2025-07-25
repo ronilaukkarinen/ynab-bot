@@ -2,7 +2,7 @@
 
 ### A Matrix bot that monitors your YNAB (You Need A Budget) transactions and sends real-time notifications to a Matrix room, including budget progress for each category.
 
-<img width="80" height="28" alt="YNAB" src="https://github.com/user-attachments/assets/c7300ced-3496-4604-ad5d-22cd60f73276" /> ![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge) [![javascript](https://img.shields.io/badge/javascript-%23F7DF1E.svg?style=for-the-badge&logo=javascript&logoColor=black)](#) [![node.js](https://img.shields.io/badge/node.js-%23339933.svg?style=for-the-badge&logo=node.js&logoColor=white)](#)
+<img width="80" height="28" alt="YNAB" src="https://github.com/user-attachments/assets/c7300ced-3496-4604-ad5d-22cd60f73276" /> ![Version](https://img.shields.io/badge/version-1.0.1-blue?style=for-the-badge) [![javascript](https://img.shields.io/badge/javascript-%23F7DF1E.svg?style=for-the-badge&logo=javascript&logoColor=black)](#) [![node.js](https://img.shields.io/badge/node.js-%23339933.svg?style=for-the-badge&logo=node.js&logoColor=white)](#)
 
 ## Features
 
