@@ -121,6 +121,7 @@ export class TransactionMonitor {
         categoryGroup.categories.forEach(category => {
           const budgeted = (category.budgeted || 0) / 1000;
           const activity = Math.abs((category.activity || 0) / 1000);
+          // Use the balance directly from YNAB API instead of calculating
           const balance = (category.balance || 0) / 1000;
 
           categoryDetails.set(category.id, {
@@ -128,7 +129,7 @@ export class TransactionMonitor {
             group: categoryGroup.name,
             budgeted: budgeted,
             spent: activity,
-            remaining: budgeted - activity, // Calculate remaining correctly
+            remaining: balance, // Use YNAB's calculated balance
             hasbudget: budgeted > 0
           });
         });

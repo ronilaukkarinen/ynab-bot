@@ -212,6 +212,8 @@ export class YnabClient {
     }
 
     const spent = Math.abs(activity);
+    // Use the balance directly from YNAB instead of calculating remaining
+    const remaining = balance;
     const percentage = Math.round((spent / budgeted) * 100);
 
     let status = 'good';
@@ -224,7 +226,7 @@ export class YnabClient {
     return {
       budgeted,
       spent,
-      remaining: balance,
+      remaining,
       percentage: Math.min(percentage, 100),
       status
     };

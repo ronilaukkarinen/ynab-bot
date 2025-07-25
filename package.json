@@ -1,6 +1,6 @@
 {
   "name": "ynab-matrix-bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Matrix bot that monitors YNAB transactions and posts budget updates to Matrix rooms",
   "main": "src/index.js",
   "type": "module",
