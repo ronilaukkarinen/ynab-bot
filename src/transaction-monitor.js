@@ -77,6 +77,10 @@ export class TransactionMonitor {
         // Update count
         this.lastTransactionCount = realTransactions.length;
 
+        // Invalidate category cache to get fresh budget data
+        this.categoryCache = null;
+        this.categoryCacheTime = null;
+        
         // Get category details and send notification
         const categoryDetails = await this.getCategoryDetailsForTransactions(newTransactions);
         const message = this.messageFormatter.formatMultipleTransactions(newTransactions, categoryDetails);
