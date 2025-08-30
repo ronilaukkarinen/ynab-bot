@@ -26,10 +26,11 @@ export class TransactionMonitor {
       console.log(`📊 Got ${allTransactions.length} total transactions`);
       console.log(`🧠 Known transaction IDs: ${this.knownTransactionIds.size}`);
 
-      // Filter out transfers, deleted, and automatic/system transactions
+      // Filter out transfers, deleted, uncleared, and automatic/system transactions
       const realTransactions = allTransactions.filter(transaction =>
         !transaction.deleted &&
         !transaction.transfer_account_id &&
+        (transaction.cleared === 'cleared' || transaction.cleared === 'reconciled') && // Only post cleared/reconciled transactions
         !transaction.payee_name?.includes('Starting Balance') &&
         !transaction.memo?.includes('Starting Balance') &&
         !transaction.payee_name?.includes('Manual Balance Adjustment') &&
@@ -92,11 +93,23 @@ export class TransactionMonitor {
     } catch (error) {
       console.error('❌ Error:', error.message);
 
-      try {
-        const errorMessage = this.messageFormatter.formatErrorMessage(error);
-        await this.matrixClient.sendFormattedMessage(errorMessage.plain, errorMessage.html);
-      } catch (matrixError) {
-        console.error('Failed to send error message to Matrix:', matrixError.message);
+      // Only send error messages for critical errors, not for minor issues
+      const isCriticalError = 
+        error.message.includes('Failed to fetch') ||
+        error.message.includes('Rate limit exceeded') ||
+        error.message.includes('401') ||
+        error.message.includes('403') ||
+        error.message.includes('Access denied') ||
+        error.message.includes('authentication') ||
+        error.message.includes('Matrix initialization failed');
+
+      if (isCriticalError) {
+        try {
+          const errorMessage = this.messageFormatter.formatErrorMessage(error);
+          await this.matrixClient.sendFormattedMessage(errorMessage.plain, errorMessage.html);
+        } catch (matrixError) {
+          console.error('Failed to send error message to Matrix:', matrixError.message);
+        }
       }
     }
   }

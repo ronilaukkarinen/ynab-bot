@@ -42,11 +42,11 @@ async function setupMatrix() {
   console.log('\n🏠 Matrix homeserver setup');
   console.log('===========================');
 
-  const defaultHomeserver = 'https://chat.mementomori.social';
-  let homeserver = await question(`Matrix homeserver URL [${defaultHomeserver}]: `);
+  let homeserver = await question(`Matrix homeserver URL (e.g., https://matrix.org): `);
 
   if (!homeserver.trim()) {
-    homeserver = defaultHomeserver;
+    console.error('❌ Matrix homeserver URL is required');
+    return null;
   }
 
   // Ensure homeserver starts with https://
@@ -119,7 +119,7 @@ async function manualMatrixSetup(homeserver) {
   console.log('\n📝 Manual Matrix setup');
   console.log('=======================');
   console.log('You need to provide:');
-  console.log('1. Bot user ID (e.g., @ynabbot:chat.mementomori.social)');
+  console.log('1. Bot user ID (e.g., @ynabbot:matrix.org)');
   console.log('2. Access token for the bot user');
   console.log('\nTo get an access token:');
   console.log('1. Login to Element web client with your bot account');

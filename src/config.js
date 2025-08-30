@@ -15,7 +15,7 @@ export const config = {
     apiUrl: 'https://api.ynab.com/v1'
   },
   matrix: {
-    homeserver: process.env.MATRIX_HOMESERVER || 'https://chat.mementomori.social',
+    homeserver: process.env.MATRIX_HOMESERVER,
     userId: process.env.MATRIX_USER_ID,
     accessToken: process.env.MATRIX_ACCESS_TOKEN,
     roomId: process.env.MATRIX_ROOM_ID
@@ -71,6 +71,7 @@ export const config = {
 export function validateConfig() {
   const required = [
     'YNAB_ACCESS_TOKEN',
+    'MATRIX_HOMESERVER',
     'MATRIX_USER_ID',
     'MATRIX_ACCESS_TOKEN',
     'MATRIX_ROOM_ID'

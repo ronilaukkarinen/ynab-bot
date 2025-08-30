@@ -141,10 +141,11 @@ export class MatrixClient {
         throw new Error('Room not found or not accessible');
       }
 
+      const memberCount = room.getJoinedMemberCount();
       return {
         name: room.name || 'Unknown Room',
         roomId: this.roomId,
-        memberCount: room.getJoinedMemberCount()
+        memberCount: memberCount > 0 ? memberCount : 'Unknown'
       };
     } catch (error) {
       throw new Error(`Failed to get room info: ${error.message}`);
@@ -212,12 +213,15 @@ export class MatrixClient {
         tempClient.on('sync', onSync);
       });
 
-      const rooms = tempClient.getRooms().map(room => ({
-        roomId: room.roomId,
-        name: room.name || 'Unnamed Room',
-        memberCount: room.getJoinedMemberCount(),
-        isPublic: room.getJoinRule() === 'public'
-      }));
+      const rooms = tempClient.getRooms().map(room => {
+        const memberCount = room.getJoinedMemberCount();
+        return {
+          roomId: room.roomId,
+          name: room.name || 'Unnamed Room',
+          memberCount: memberCount > 0 ? memberCount : 'Unknown',
+          isPublic: room.getJoinRule() === 'public'
+        };
+      });
 
       tempClient.stopClient();
       return rooms;
@@ -263,9 +267,10 @@ export class MatrixClient {
         throw new Error('Room not found or not accessible');
       }
 
+      const memberCount = room.getJoinedMemberCount();
       const result = {
         roomName: room.name || 'Unknown Room',
-        memberCount: room.getJoinedMemberCount()
+        memberCount: memberCount > 0 ? memberCount : 'Unknown'
       };
 
       tempClient.stopClient();
