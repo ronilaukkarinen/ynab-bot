@@ -1,3 +1,10 @@
+import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export class TransactionMonitor {
   constructor(ynabClient, matrixClient, messageFormatter) {
     this.ynabClient = ynabClient;
@@ -10,10 +17,43 @@ export class TransactionMonitor {
     this.categoryCache = null;
     this.categoryCacheTime = null;
     this.cacheValidityMinutes = 30; // Cache categories for 30 minutes
+    this.stateFile = path.join(__dirname, '..', '.ynab-bot-state.json');
   }
 
   async initialize() {
-    // Nothing to do
+    // Load known transaction IDs from persistent storage
+    await this.loadState();
+  }
+
+  async loadState() {
+    try {
+      const data = await fs.readFile(this.stateFile, 'utf8');
+      const state = JSON.parse(data);
+      if (state.knownTransactionIds && Array.isArray(state.knownTransactionIds)) {
+        this.knownTransactionIds = new Set(state.knownTransactionIds);
+        this.lastTransactionCount = state.knownTransactionIds.length;
+        console.log(`📂 Loaded ${this.knownTransactionIds.size} known transaction IDs from state`);
+      }
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        console.error('Failed to load state:', error.message);
+      }
+      // If file doesn't exist or is invalid, start fresh
+      console.log('📂 Starting with fresh state (no previous transaction IDs found)');
+    }
+  }
+
+  async saveState() {
+    try {
+      const state = {
+        knownTransactionIds: Array.from(this.knownTransactionIds),
+        lastSaved: new Date().toISOString()
+      };
+      await fs.writeFile(this.stateFile, JSON.stringify(state, null, 2));
+      console.log(`💾 Saved ${this.knownTransactionIds.size} known transaction IDs to state`);
+    } catch (error) {
+      console.error('Failed to save state:', error.message);
+    }
   }
 
   async checkForNewTransactions() {
@@ -48,13 +88,14 @@ export class TransactionMonitor {
 
       console.log(`📋 Real transactions after filtering: ${realTransactions.length}`);
 
-            // Initialize baseline on first run
-      if (this.lastTransactionCount === 0) {
+            // Initialize baseline on first run (no state loaded)
+      if (this.lastTransactionCount === 0 && this.knownTransactionIds.size === 0) {
         realTransactions.forEach(transaction => {
           this.knownTransactionIds.add(transaction.id);
         });
         this.lastTransactionCount = realTransactions.length;
         console.log(`📋 Baseline set: ${realTransactions.length} existing transactions`);
+        await this.saveState(); // Save the baseline
         return; // Don't notify about existing transactions
       }
 
@@ -70,7 +111,33 @@ export class TransactionMonitor {
           console.log(`   ${index + 1}. ${transaction.payee_name || transaction.memo || 'Unknown'} - ${Math.abs(transaction.amount / 1000).toFixed(2)} €`);
           console.log(`     ID: ${transaction.id}`);
           console.log(`     Memo: "${transaction.memo || 'NO MEMO'}"`);
+        });
 
+        // Invalidate category cache to get fresh budget data
+        this.categoryCache = null;
+        this.categoryCacheTime = null;
+        
+        // Try to get category details, but send message even if it fails
+        let categoryDetails;
+        let message;
+        
+        try {
+          categoryDetails = await this.getCategoryDetailsForTransactions(newTransactions);
+          message = this.messageFormatter.formatMultipleTransactions(newTransactions, categoryDetails);
+        } catch (categoryError) {
+          console.error('⚠️ Failed to fetch category details:', categoryError.message);
+          console.log('📨 Sending simplified message without budget details...');
+          
+          // Create empty category details map as fallback
+          categoryDetails = new Map();
+          message = this.messageFormatter.formatMultipleTransactions(newTransactions, categoryDetails);
+        }
+        
+        await this.matrixClient.sendFormattedMessage(message.plain, message.html);
+        console.log(`✅ Notification sent`);
+
+        // Only save state AFTER successful message sending
+        newTransactions.forEach((transaction) => {
           // Add to known IDs
           this.knownTransactionIds.add(transaction.id);
         });
@@ -78,16 +145,8 @@ export class TransactionMonitor {
         // Update count
         this.lastTransactionCount = realTransactions.length;
 
-        // Invalidate category cache to get fresh budget data
-        this.categoryCache = null;
-        this.categoryCacheTime = null;
-        
-        // Get category details and send notification
-        const categoryDetails = await this.getCategoryDetailsForTransactions(newTransactions);
-        const message = this.messageFormatter.formatMultipleTransactions(newTransactions, categoryDetails);
-        await this.matrixClient.sendFormattedMessage(message.plain, message.html);
-
-        console.log(`✅ Notification sent`);
+        // Save state after successful notification
+        await this.saveState();
       }
 
     } catch (error) {

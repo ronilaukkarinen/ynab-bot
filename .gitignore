@@ -109,6 +109,7 @@ signal-data/
 # Bot state files
 last_transaction_time.txt
 state/
+.ynab-bot-state.json
 
 # Log files
 *.log

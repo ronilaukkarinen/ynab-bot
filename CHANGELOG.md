@@ -1,3 +1,11 @@
+### 1.0.3: 2025-08-31
+
+* Add persistent state storage for known transaction IDs
+* Save state only after successful message sending
+* Add fallback for category fetching errors
+* Send simplified messages when budget details unavailable
+* Fix transaction notifications not being sent after restart
+
 ### 1.0.2: 2025-08-30
 
 * Only post cleared and reconciled transactions
